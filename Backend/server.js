@@ -3,6 +3,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 import connection from "./config/Db_connection.js";
 import userRoute from "./routes/UserRoute.js";
+import productrouter from "./routes/ProductRouter.js";
 
 const app = express();
 // dotenv config 
@@ -25,6 +26,8 @@ app.listen(port,()=>{
 
 // userRoyte 
 app.use("/api/v1/user",userRoute);
+// productRouter
+app.use("/api/v1/product",productrouter);
 
 // mongoDbconnection
 connection().then(()=>{

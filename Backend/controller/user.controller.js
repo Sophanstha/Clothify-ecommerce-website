@@ -72,3 +72,14 @@ export const login = async (req,res)=>{
     })
   }
 }
+// get user detail
+export const getUserDetail = async (req,res)=>{
+  try {
+    res.json(req.user)
+  } catch (error) {
+    console.log('====================================');
+    console.log(error.message);
+    console.log('====================================');
+    
+  }
+}

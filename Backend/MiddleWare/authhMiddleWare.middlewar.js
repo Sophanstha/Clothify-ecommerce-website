@@ -27,5 +27,21 @@ const protect = async (req, res, next) => {
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
-
 export default protect;
+// middleware to check role is admin or not
+export const checkRole = (req,res,next)=>{
+  try {
+    if(req.user && req.user.role == "admin"){
+      next();
+    }else{
+      return res.status(501).json({
+        message : "unauthorized access role is not admin"
+      })
+    }
+    
+  } catch (error) {
+    return res.status(500).json({
+      message : error
+    })
+  }
+}
