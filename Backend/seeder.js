@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Product from "./model/product.model.js";
 import User from "./model/user.model.js";
 import products from "./data/product.js";
+import Cart from "./model/Cart.model.js";
 import dotenv from "dotenv"
 
 dotenv.config();
@@ -12,6 +13,7 @@ const seeding = async()=>{
     try {
         await Product.deleteMany()
         await User.deleteMany()
+        await Cart.deleteMany()
         // creating admin user
 
         const createdAdminUser = await User.create({
