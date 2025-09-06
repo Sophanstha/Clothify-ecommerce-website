@@ -5,6 +5,7 @@ import connection from "./config/Db_connection.js";
 import userRoute from "./routes/UserRoute.js";
 import productrouter from "./routes/ProductRouter.js";
 import CartRoute from "./routes/CartRoute.js";
+import orderRouter from "./routes/OrderRoute.js";
 
 const app = express();
 // dotenv config 
@@ -31,6 +32,14 @@ app.use("/api/v1/user",userRoute);
 app.use("/api/v1/product",productrouter);
 // CartRoute
 app.use("/api/v1/cart",CartRoute)
+// orderRouter
+app.use("/api/v1/order",orderRouter)
+
+
+
+
+
+
 // mongoDbconnection
 connection().then(()=>{
     console.log("database connected succefully");
