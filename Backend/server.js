@@ -17,9 +17,23 @@ const port = process.env.PORT || process.env.PORT_NUM || 5000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// browsers send the Origin header without a trailing slash, so normalize env values
+const allowedOrigins = [
+  ...(process.env.FRONTEND_URL || "").split(","),
+  "http://localhost:5173",
+]
+  .map((url) => url.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*",
+    origin: (origin, callback) => {
+      // allow non-browser requests (curl, server-to-server) that send no Origin
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
   }),
 );
