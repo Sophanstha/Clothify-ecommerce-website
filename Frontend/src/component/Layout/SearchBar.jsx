@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 
 const SearchBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTre, setSearchTre] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!searchTre.trim()) return; // prevent empty search
-    console.log("Searching for:", searchTre);
+    if (!searchTerm.trim()) return;
 
-    setSearchTre(""); // clear input
-    setIsOpen(false); // close search bar after submission
+    navigate(`/collection/all?search=${encodeURIComponent(searchTerm.trim())}`);
+    setSearchTerm("");
+    setIsOpen(false);
   };
 
   return (
@@ -23,23 +25,38 @@ const SearchBar = () => {
         >
           <input
             type="text"
-            placeholder="Search..."
-            className="border border-gray-300 rounded px-3 py-2 
-                       w-full sm:w-64 md:w-80 lg:w-96
+            placeholder="Search products..."
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm
+                       w-full sm:w-64 md:w-72 lg:w-80
                        focus:outline-none focus:border-orange-500"
-            value={searchTre}
-            onChange={(e) => setSearchTre(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
           />
-          <button type="submit" className="p-2 hover:text-orange-500">
+          <button
+            type="submit"
+            className="p-1.5 text-gray-600 hover:text-orange-500 transition"
+            title="Search"
+          >
             <CiSearch size={22} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="text-xs text-gray-400 hover:text-gray-600 px-1"
+          >
+            ✕
           </button>
         </form>
       ) : (
-        <CiSearch
-          className="cursor-pointer hover:text-orange-500"
-          size={26}
+        <button
+          type="button"
+          aria-label="Open search bar"
+          className="cursor-pointer hover:text-orange-500 text-gray-700 flex items-center"
           onClick={() => setIsOpen(true)}
-        />
+        >
+          <CiSearch size={24} />
+        </button>
       )}
     </div>
   );

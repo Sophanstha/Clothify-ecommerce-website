@@ -6,6 +6,8 @@ import userRoute from "./routes/UserRoute.js";
 import productrouter from "./routes/ProductRouter.js";
 import CartRoute from "./routes/CartRoute.js";
 import orderRouter from "./routes/OrderRoute.js";
+import router from "./routes/UploadFileRouter.js";
+import adminRouter from "./routes/AdminRouter.js";
 
 const app = express();
 // dotenv config 
@@ -15,7 +17,10 @@ const port = process.env.PORT_NUM
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-app.use(cors())
+app.use(cors(
+    
+
+))
 
 app.get("/",(req,res)=>{
   res.send("Welcome to clothify")
@@ -34,6 +39,10 @@ app.use("/api/v1/product",productrouter);
 app.use("/api/v1/cart",CartRoute)
 // orderRouter
 app.use("/api/v1/order",orderRouter)
+// upload Image Route
+app.use("/api/v1/upload",router)
+// admin Route
+app.use("/api/v1/admin",adminRouter)
 
 
 

@@ -18,6 +18,11 @@ import User from './component/Layout/User.jsx'
 import ProductManagment from './component/Layout/ProductManagment.jsx'
 import EditProductPage from './component/Layout/EditProductPage.jsx'
 import OrderManagment from './component/Layout/OrderManagment.jsx'
+import ProtectedRoute from './component/Common/ProtectedRoute.jsx'
+import ForgotPassword from './pages/ForgotPassword.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
+import {Provider} from "react-redux"
+import store from './redux/store.jsx'
 
 const route = createBrowserRouter(
   createRoutesFromElements(
@@ -25,18 +30,24 @@ const route = createBrowserRouter(
       <Route index element={<Home/>} />
       <Route path='/register' element={<Register/>}/>
       <Route path='/login' element={<Login/>}/>   
-      <Route path='/profile' element ={<Profile/>}/>
+      <Route path='/forgot-password' element={<ForgotPassword/>}/>
+      <Route path='/reset-password/:token' element={<ResetPassword/>}/>
       <Route path='/collection/all' element={<Collection/>} />
       <Route path='/product/:id' element={<BestSeller/>}/>
-      <Route path='/checkout' element={<Checkout/>}/>
-      <Route path='/confrimOrder' element={<ConfirmOrder/>}/>
-      <Route path='/order/:id' element={<OrderDetail/>}/>
-      <Route path='/admin' element={<Adminlayout/>}>
-      <Route index element={<AdminHomePage/>}/>
-      <Route path='user' element={<User/>}/>
-      <Route  path='product' element={<ProductManagment/>}/>
-      <Route  path='product/:id' element={<EditProductPage/>}/>
-      <Route path='order' element={<OrderManagment/>}/>
+      
+      {/* Protected Customer Routes */}
+      <Route path='/profile' element={<ProtectedRoute><Profile/></ProtectedRoute>}/>
+      <Route path='/checkout' element={<ProtectedRoute><Checkout/></ProtectedRoute>}/>
+      <Route path='/confrimOrder' element={<ProtectedRoute><ConfirmOrder/></ProtectedRoute>}/>
+      <Route path='/order/:id' element={<ProtectedRoute><OrderDetail/></ProtectedRoute>}/>
+
+      {/* Protected Admin Routes */}
+      <Route path='/admin' element={<ProtectedRoute roleRequired='admin'><Adminlayout/></ProtectedRoute>}>
+        <Route index element={<AdminHomePage/>}/>
+        <Route path='user' element={<User/>}/>
+        <Route path='product' element={<ProductManagment/>}/>
+        <Route path='product/:id' element={<EditProductPage/>}/>
+        <Route path='order' element={<OrderManagment/>}/>
       </Route>
     </Route>
   )
@@ -44,8 +55,10 @@ const route = createBrowserRouter(
 
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <Provider store={store}>
  <RouterProvider router={route} />
-  </StrictMode>
+
+  </Provider>
+  
 
 )

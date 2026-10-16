@@ -100,7 +100,10 @@ export const updateProductDetail = async (req, res) => {
     product.colors = req.body.colors || product.colors;
     product.collections = req.body.collections || product.collections;
     product.material = req.body.material || product.material;
-    product.gender = req.body.gender || product.gender;
+    if (req.body.gender) {
+      const g = String(req.body.gender).toLowerCase();
+      product.gender = g === "women" ? "Women" : g === "men" ? "Men" : "Unisex";
+    }
     product.images = req.body.images || product.images;
     product.isfeature = req.body.isfeature ?? product.isfeature; // boolean check
     product.isPublished = req.body.isPublished ?? product.isPublished;
@@ -177,50 +180,57 @@ export const getProduct = async (req, res) => {
     let query = {};
 
     if (category && category.toLowerCase() !== "all") {
-      query.category = category;
+      query.category = { $regex: new RegExp(`^${category}$`, "i") };
     }
     if (collection && collection.toLowerCase() !== "all") {
-      query.collection = collection;
+      query.$or = [
+        { collections: { $regex: new RegExp(collection, "i") } },
+        { collection: { $regex: new RegExp(collection, "i") } },
+      ];
     }
     if (material) {
-      query.material = { $in: material.split(",") };
+      const materialList = material.split(",").map((m) => new RegExp(`^${m.trim()}$`, "i"));
+      query.material = { $in: materialList };
     }
     if (brand) {
-      query.brand = { $in: brand.split(",") };
+      const brandList = brand.split(",").map((b) => new RegExp(`^${b.trim()}$`, "i"));
+      query.brand = { $in: brandList };
     }
     if (size) {
-      query.sizes = { $in: size.split(",") };
+      const sizeList = size.split(",").map((s) => s.trim());
+      query.sizes = { $in: sizeList };
     }
-    if (color) {
-      query.colors = { $in: [color] };
+    if (color && color.toLowerCase() !== "all") {
+      const colorList = color.split(",").map((c) => new RegExp(`^${c.trim()}$`, "i"));
+      query.colors = { $in: colorList };
     }
-    if (gender) {
-      query.gender = gender;
+    if (gender && gender.toLowerCase() !== "all") {
+      query.gender = { $regex: new RegExp(`^${gender}$`, "i") };
     }
-    if (price) {
+    if (minPrice !== undefined || maxPrice !== undefined) {
       query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+      if (minPrice && !isNaN(Number(minPrice))) query.price.$gte = Number(minPrice);
+      if (maxPrice && !isNaN(Number(maxPrice))) query.price.$lte = Number(maxPrice);
     }
-    if (search) {
+    if (search && search.trim() !== "") {
+      const searchRegex = { $regex: search.trim(), $options: "i" };
       query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } }
+        { name: searchRegex },
+        { description: searchRegex },
+        { brand: searchRegex },
+        { category: searchRegex },
       ];
     }
 
-    let sort = {};
+    let sort = { createdAt: -1 };
     if (sortBy) {
-      switch (sortBy) {
-        case "priceAsc":
-          sort = { price: 1 };
-          break;
-        case "priceDsc":
-          sort = { price: -1 };
-          break;
-        case "popularity":
-          sort = { rating: -1 };
-          break;
+      const s = sortBy.toLowerCase();
+      if (s === "priceasc") {
+        sort = { price: 1 };
+      } else if (s === "pricedesc" || s === "pricedsc") {
+        sort = { price: -1 };
+      } else if (s === "popularity") {
+        sort = { rating: -1 };
       }
     }
 
@@ -229,9 +239,9 @@ export const getProduct = async (req, res) => {
       .limit(Number(limit) || 0);
 
     return res.status(200).json({
-      message : "datafetch succefully",
-      data : product
-    })
+      message: "datafetch succefully",
+      data: product,
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });
@@ -348,3 +358,60 @@ export const similarProduct = async(req,res)=>{
     })
   }
 }
+
+// Create or update product review
+export const createProductReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const { id } = req.params;
+
+    if (!rating || !comment) {
+      return res.status(400).json({ message: "Rating and comment are required" });
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (!product.reviews) {
+      product.reviews = [];
+    }
+
+    const alreadyReviewed = product.reviews.find(
+      (r) => r.user && r.user.toString() === req.user._id.toString()
+    );
+
+    if (alreadyReviewed) {
+      alreadyReviewed.rating = Number(rating);
+      alreadyReviewed.comment = comment;
+      alreadyReviewed.createdAt = new Date();
+    } else {
+      const review = {
+        name: req.user.name || "Customer",
+        rating: Number(rating),
+        comment,
+        user: req.user._id,
+        createdAt: new Date(),
+      };
+      product.reviews.push(review);
+    }
+
+    product.numReview = product.reviews.length;
+    product.rating =
+      product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      product.reviews.length;
+
+    await product.save();
+
+    return res.status(201).json({
+      success: true,
+      message: alreadyReviewed ? "Review updated successfully" : "Review added successfully",
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error in createProductReview:", error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+

@@ -1,97 +1,110 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../../redux/slices/productSlice";
+import { Carousel_001 } from "../ui/skiper47";
 
-const YouMayLike = () => {
-    const product =[
+const fallbackProducts = [
   {
-    "id": 1,
-    "name": "Classic Denim Jacket",
-    "price": 85.00,
-    "image": [
+    _id: "1",
+    name: "Classic Denim Jacket",
+    price: 2999.0,
+    images: [
       {
-        "url": "https://i.pinimg.com/1200x/1c/db/0b/1cdb0b17a4242365ddab162e0bb10721.jpg",
-        "altname": "Blue denim jacket on hanger"
+        url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500",
+        altText: "Denim jacket",
       },
-      {
-        "url": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f",
-        "altname": "Stylish denim jacket front view"
-      }
-    ]
+    ],
   },
   {
-    "id": 2,
-    "name": "Casual White T-Shirt",
-    "price": 25.50,
-    "image": [
+    _id: "2",
+    name: "Casual White T-Shirt",
+    price: 1550.0,
+    images: [
       {
-        "url": "https://plus.unsplash.com/premium_photo-1674343821308-9c1bc5427489?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fHdvbWVuJTIwZHJlc3NzfGVufDB8fDB8fHww",
-        "altname": "Plain white t-shirt on hanger"
+        url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500",
+        altText: "White t-shirt",
       },
-      {
-        "url": "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb",
-        "altname": "White t-shirt flat lay"
-      }
-    ]
+    ],
   },
   {
-    "id": 3,
-    "name": "Hooded Sweatshirt",
-    "price": 60.00,
-    "image": [
+    _id: "3",
+    name: "Hooded Sweatshirt",
+    price: 2400.0,
+    images: [
       {
-        "url": "https://i.pinimg.com/1200x/f5/81/d0/f581d0d951ca51cee279a41ee7ee2bce.jpg",
-        "altname": "Gray hoodie worn by model"
+        url: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500",
+        altText: "Hoodie",
       },
-      {
-        "url": "https://images.unsplash.com/photo-1602810318383-e386cc2a3a39",
-        "altname": "Gray hoodie front view"
-      }
-    ]
+    ],
   },
   {
-    "id": 4,
-    "name": "T-Shirt",
-    "price": 150.00,
-    "image": [
+    _id: "4",
+    name: "Summer Linen Shirt",
+    price: 1850.0,
+    images: [
       {
-        "url": "https://images.unsplash.com/photo-1562157873-818bc0726f68?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "altname": "Black leather jacket on hanger"
+        url: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=500",
+        altText: "Shirt",
       },
+    ],
+  },
+  {
+    _id: "5",
+    name: "Vintage Bomber Jacket",
+    price: 3600.0,
+    images: [
       {
-        "url": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f",
-        "altname": "Black leather jacket stylish closeup"
-      }
-    ]
-  }
-]
-const location = useLocation();
+        url: "https://images.unsplash.com/photo-1544441893-675973e31985?w=500",
+        altText: "Bomber jacket",
+      },
+    ],
+  },
+];
 
-    return (
-        <div className="flex flex-col gap-5">
-          {
-            location.pathname == "/"?
-  <h2 className="text-center font-bold text-2xl">You May Like</h2>
-          : ""}
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    {product.map((item) => (
-      <Link key={item.id} to={`/product/${item.id}`}>
-        <div className="flex flex-col gap-2 rounded-lg p-4 shadow hover:shadow-lg transition">
-          {/* 👇 Fixed height container */}
-          <div className="w-full h-64 bg-white overflow-hidden rounded-lg">
-            <img
-              src={item.image[0].url}
-              alt={item.image[0].altname || item.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <p className="text-lg font-medium">{item.name}</p>
-          <p className="mt-2 text-gray-600 font-semibold">${item.price}</p>
-        </div>
-      </Link>
-    ))}
-  </div>
-</div>
-  )
-}
+const YouMayLike = ({ title = "You May Also Like", subtitle = "Curated picks tailored to your style" }) => {
+  const dispatch = useDispatch();
+  const { products, similarProducts } = useSelector((state) => state.product);
 
-export default YouMayLike
+  useEffect(() => {
+    if (!products || products.length === 0) {
+      dispatch(fetchProducts({ limit: 12 }));
+    }
+  }, [dispatch, products]);
+
+  const displayProducts =
+    similarProducts && similarProducts.length > 0
+      ? similarProducts
+      : products && products.length > 0
+      ? products
+      : fallbackProducts;
+
+  return (
+    <section className="py-12 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 text-center mb-6">
+        <span className="text-xs uppercase tracking-widest text-orange-600 font-bold bg-orange-50 px-3 py-1 rounded-full border border-orange-200 inline-block mb-2">
+          Recommended For You
+        </span>
+        <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-gray-500 text-sm mt-1 max-w-lg mx-auto">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      {/* Skiper47 Perspective Coverflow Carousel Component */}
+      <Carousel_001
+        items={displayProducts}
+        showPagination={true}
+        showNavigation={true}
+        loop={true}
+        autoplay={true}
+        spaceBetween={30}
+      />
+    </section>
+  );
+};
+
+export default YouMayLike;

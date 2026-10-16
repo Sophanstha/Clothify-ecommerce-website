@@ -1,4 +1,6 @@
 import mongoose, { Types } from "mongoose";
+import "./user.model.js";
+import "./product.model.js";
 
 const orderItemSchema = mongoose.Schema({
     productId :{
@@ -77,5 +79,8 @@ const orderSchame = mongoose.Schema({
    
 },{timestamps : true})
 
-const order = mongoose.model("orderSchema",orderSchame);
+const order = mongoose.models.Order || mongoose.models.orderSchema || mongoose.model("Order", orderSchame);
+if (!mongoose.models.orderSchema) {
+  mongoose.model("orderSchema", orderSchame);
+}
 export default order;

@@ -1,8 +1,12 @@
 @import "tailwindcss";
+@import "locomotive-scroll/dist/locomotive-scroll.css";
 
-#root{
-  font-family: 'Open Sans', sans-serif;
-  font-family: 'Outfit', sans-serif;
+html {
+  height: auto;
+}
+
+#root {
+  font-family: 'Outfit', 'Open Sans', sans-serif;
   background-color: #f8f9fa;
   color: #212529;
   font-optical-sizing: auto;

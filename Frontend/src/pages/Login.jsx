@@ -1,10 +1,41 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../redux/slices/authSlices";
+import toast from "react-hot-toast";
+import { LoadingSpinner } from "../component/Common/LoadingSpinner";
 
 export default function Login() {
-    
-    const[email,setemail] = useState("");
-    const[password,setpassword] = useState("");
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { loading } = useSelector((state) => state.auth);
+
+  const from = location.state?.from?.pathname || null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please fill in email and password");
+      return;
+    }
+
+    try {
+      const result = await dispatch(loginUser({ email, password })).unwrap();
+      toast.success(`Welcome back, ${result.name || "User"}!`);
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (result.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      toast.error(typeof err === "string" ? err : err?.message || "Invalid email or password");
+    }
+  };
 
     return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 relative">
@@ -24,7 +55,9 @@ export default function Login() {
           Welcome Back to <span className="text-orange-500">Clothify</span>
         </h2>
 
-        <form className="space-y-4">
+        <form 
+        onSubmit={handleSubmit}
+        className="space-y-4">
           {/* Email */}
           <div>
             <label className="block text-gray-600 mb-1">Email</label>
@@ -52,17 +85,24 @@ export default function Login() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
+            disabled={loading}
+            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Login
+            {loading ? (
+              <>
+                <LoadingSpinner size="sm" color="white" /> Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
           </button>
         </form>
 
         {/* Extra Options */}
         <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
-          <a href="/forgot-password" className="hover:text-orange-500">
+          <Link to="/forgot-password" className="hover:text-orange-500 font-medium">
             Forgot Password?
-          </a>
+          </Link>
           <NavLink to={"/register"} className="hover:text-orange-500">
             Create Account
           </NavLink>

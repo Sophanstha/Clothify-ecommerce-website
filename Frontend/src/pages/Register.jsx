@@ -1,12 +1,33 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../redux/slices/authSlices";
+import toast from "react-hot-toast";
+import { LoadingSpinner } from "../component/Common/LoadingSpinner";
 
 export default function Register() {
-    const[email,setemail] = useState("");
-    const[password,setpassword] = useState("");
-    const[name,setname] = useState("")
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const [name, setname] = useState("");
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading } = useSelector((state) => state.auth);
 
-    const nav = useNavigate()
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!name || !email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const result = await dispatch(registerUser({ name, email, password })).unwrap();
+      toast.success(`Account created! Welcome, ${result.name || "Customer"}!`);
+      navigate("/", { replace: true });
+    } catch (err) {
+      toast.error(typeof err === "string" ? err : err?.message || "Registration failed");
+    }
+  };
     return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 relative">
       {/* Background with orange overlay */}
@@ -25,7 +46,7 @@ export default function Register() {
           Register to <span className="text-orange-500">Clothify</span>
         </h2>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleRegister}>
           {/* Name */}
           <div>
             <label className="block text-gray-600 mb-1">Full Name</label>
@@ -65,9 +86,16 @@ export default function Register() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
+            disabled={loading}
+            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Create Account
+            {loading ? (
+              <>
+                <LoadingSpinner size="sm" color="white" /> Creating account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 

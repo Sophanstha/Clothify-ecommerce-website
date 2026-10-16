@@ -2,30 +2,33 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 
 const ShortOption = () => {
-  const [searchParam,setSearchParam] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleSort= (e)=>{
-    const value = e.target.value
-    searchParam.set("sortBy",value)
-    setSearchParam(searchParam)
-  }
-
+  const handleSort = (e) => {
+    const value = e.target.value;
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("sortBy", value);
+    } else {
+      newParams.delete("sortBy");
+    }
+    setSearchParams(newParams);
+  };
 
   return (
-    <div className="w-52 max-w- sm">
-      <label className="block mb-2 text-sm font-medium text-gray-700">
-        Sort By
+    <div className="flex items-center gap-2">
+      <label className="text-sm font-medium text-gray-600 whitespace-nowrap">
+        Sort By:
       </label>
       <select
-        className="w-[90%] p-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-      onChange={handleSort}
-      value={searchParam.get("sortBy")}
+        className="p-2 border border-gray-300 rounded-lg text-sm bg-white shadow-sm focus:outline-none focus:border-orange-500"
+        onChange={handleSort}
+        value={searchParams.get("sortBy") || ""}
       >
-        
-        <option value="">Default</option>
-        <option value="PriceAsc">Price: Low to High</option>
-        <option value="PriceDesc">Price: High to Low</option>
-        <option value="popularity">Popularity</option>
+        <option value="">Default (Newest)</option>
+        <option value="priceAsc">Price: Low to High</option>
+        <option value="priceDesc">Price: High to Low</option>
+        <option value="popularity">Popularity / Top Rated</option>
       </select>
     </div>
   );

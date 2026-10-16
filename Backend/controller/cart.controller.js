@@ -1,7 +1,7 @@
 import Product from "../model/product.model.js";
 import Cart from "../model/Cart.model.js";
 
-const getCart = async (userId, guestId) => {
+export const getCart = async (userId, guestId) => {
   if (userId) {
     return await Cart.findOne({ userid: userId }); // ✅ fixed field name
   } else if (guestId) {
@@ -11,10 +11,31 @@ const getCart = async (userId, guestId) => {
   }
 };
 
+export const fetchCartHandler = async (req, res) => {
+  try {
+    const userId = req.user?._id || req.query.userId || req.body?.userId;
+    const guestId = req.query.guestId || req.body?.guestId;
+    const cart = await getCart(userId, guestId);
+    if (!cart) {
+      return res.status(200).json({
+        message: "Cart data",
+        data: { products: [], totalPrice: 0 },
+      });
+    }
+    return res.status(200).json({
+      message: "Cart data",
+      data: cart,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 export const addToCart = async (req, res) => {
   try {
-    req.body.userId = req.user?._id; // inject userId from auth
-    const { productId, size, quantity, color, guestId, userId } = req.body;
+    const userId = req.user?._id || req.body.userId;
+    const { productId, size, quantity, color, guestId } = req.body;
+
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -77,11 +98,12 @@ export const addToCart = async (req, res) => {
 // change in quantity
 export const changeQuantity = async (req, res) => {
   try {
-    const { userId, guestId, size, quantity, productId, color } = req.body;
+    const userId = req.user?._id || req.body.userId;
+    const { guestId, size, quantity, productId, color } = req.body;
     let cart = await getCart(userId, guestId);
     if (!cart) {
       return res.status(404).json({
-        message: "cart doesnot exists",
+        message: "cart does not exist",
       });
     }
     const productIndex = cart.products.findIndex(
@@ -103,10 +125,11 @@ export const changeQuantity = async (req, res) => {
       );
       await cart.save();
       return res.status(200).json({
-        message: cart,
+        message: "Cart updated",
+        data: cart,
       });
     } else {
-      return res.status(202).json({
+      return res.status(404).json({
         message: "product not found in cart",
       });
     }
@@ -119,11 +142,12 @@ export const changeQuantity = async (req, res) => {
 // delete carts
 export const deleteCart = async (req, res) => {
   try {
-    const { userId, guestId, size, productId, color } = req.body;
+    const userId = req.user?._id || req.body.userId;
+    const { guestId, size, productId, color } = req.body;
     let cart = await getCart(userId, guestId);
     if (!cart) {
       return res.status(404).json({
-        message: "cart doesnot exists",
+        message: "cart does not exist",
       });
     }
     const productIndex = cart.products.findIndex(
@@ -141,10 +165,11 @@ export const deleteCart = async (req, res) => {
       await cart.save();
       return res.status(200).json({
         message: "cart deleted successfully",
+        data: cart,
       });
     } else {
-      return res.status(400).status({
-        message: "cart does not found",
+      return res.status(404).json({
+        message: "product not found in cart",
       });
     }
   } catch (error) {

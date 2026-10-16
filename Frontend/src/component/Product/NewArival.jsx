@@ -1,69 +1,90 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
+const defaultNewArrivals = [
+  {
+    _id: "1",
+    name: "Hoodie",
+    price: 2499,
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500",
+        altText: "Hoodie",
+      },
+    ],
+  },
+  {
+    _id: "2",
+    name: "One Piece Dress",
+    price: 3899,
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500",
+        altText: "One piece",
+      },
+    ],
+  },
+  {
+    _id: "3",
+    name: "Linen Pants",
+    price: 1999,
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=500",
+        altText: "Linen pants",
+      },
+    ],
+  },
+  {
+    _id: "4",
+    name: "Oversized Shirt",
+    price: 1699,
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500",
+        altText: "Oversized shirt",
+      },
+    ],
+  },
+];
 
 const NewArival = () => {
-  const newA = [
-    {
-      id: 1,
-      name: "Hoodie",
-      price: "99.99",
-      image: {
-        url: "https://i.pinimg.com/1200x/6a/58/0c/6a580cc3c6800bdc4cb02ba38e83e20d.jpg",
-        altName: "Black wireless headphones on a table",
-      },
-    },
-    {
-      id: 2,
-      name: "one piece",
-      price: "699.99",
-      image: {
-        url: "https://i.pinimg.com/1200x/74/35/f6/7435f69eb9fff585fb7e10e02d6c42e6.jpg",
-        altName: "Modern smartphone with a glowing screen",
-      },
-    },
-    {
-      id: 3,
-      name: "liner paints",
-      price: "1299.99",
-      image: {
-        url: "https://i.pinimg.com/736x/15/d2/11/15d2115fa87dbf76da27339a2151efc4.jpg",
-        altName: "Gaming laptop with RGB keyboard",
-      },
-    },
-    {
-      id: 4,
-      name: "overSize Shirts",
-      price: "89.99",
-      image: {
-        url: "https://i.pinimg.com/736x/0a/cc/ee/0accee0529ac648adafca5446a72568d.jpg",
-        altName: "Pair of blue sports running shoes",
-      },
-    },
-    {
-      id: 5,
-      name: "down",
-      price: "199.99",
-      image: {
-        url: "https://i.pinimg.com/1200x/51/cf/69/51cf69795832e13d243fb64f3b0e5a61.jpg",
-        altName: "Black smartwatch with digital display",
-      },
-    },
-  ];
-
+  const [newArrivals, setNewArrivals] = useState([]);
   const ScrollRef = useRef(null);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [isDraggable, setIsDraggable] = useState(false);
   const [startX, setStartX] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  useEffect(() => {
+    const fetchArrivals = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/product/getNewLyArrival`
+        );
+        if (response.data?.data && response.data.data.length > 0) {
+          setNewArrivals(response.data.data);
+        } else {
+          setNewArrivals(defaultNewArrivals);
+        }
+      } catch {
+        setNewArrivals(defaultNewArrivals);
+      }
+    };
+    fetchArrivals();
+  }, []);
 
   const scroll = (direction) => {
-    const scrollAmount = direction === "left" ? -300 : 300;
-    ScrollRef.current.scrollBy({
-      left: scrollAmount,
-      behavior: "smooth",
-    });
+    const scrollAmount = direction === "left" ? -350 : 350;
+    if (ScrollRef.current) {
+      ScrollRef.current.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
+    }
   };
 
   const updateScrollButton = () => {
@@ -71,17 +92,10 @@ const NewArival = () => {
     if (container) {
       const leftScroll = container.scrollLeft;
       const rightScroll =
-        container.scrollWidth > leftScroll + container.clientWidth;
+        container.scrollWidth > leftScroll + container.clientWidth + 1;
 
-      setCanScrollLeft(leftScroll > 0);
+      setCanScrollLeft(leftScroll > 5);
       setCanScrollRight(rightScroll);
-
-      console.log({
-        scrollLeft: container.scrollLeft,
-        clientWidth: container.clientWidth,
-        containerScrollWidth: container.scrollWidth,
-        offsetLeft: ScrollRef.current.offsetLeft,
-      });
     }
   };
 
@@ -93,7 +107,7 @@ const NewArival = () => {
       return () =>
         container.removeEventListener("scroll", updateScrollButton);
     }
-  }, []);
+  }, [newArrivals]);
 
   const handleMouseDown = (e) => {
     setIsDraggable(true);
@@ -104,7 +118,7 @@ const NewArival = () => {
   const handleMouseMove = (e) => {
     if (!isDraggable) return;
     const x = e.pageX - ScrollRef.current.offsetLeft;
-    const walk = x - startX;
+    const walk = (x - startX) * 1.5;
     ScrollRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -112,72 +126,98 @@ const NewArival = () => {
   const handleMouseUp = () => setIsDraggable(false);
 
   return (
-    <div>
-      <section className="container m-auto text-center relative mb-10">
-        <h2 className="text-3xl font-bold mb-4">Explore new arrivals</h2>
-        <p className="text-gray-600 mb-6">
-          Discover the latest trends and styles in our new arrivals section.
-        </p>
+    <section className="py-12 bg-white">
+      <div className="container mx-auto px-4 relative mb-6">
+        <div className="text-center">
+          <span className="text-xs uppercase tracking-widest text-orange-600 font-bold bg-orange-50 px-3 py-1 rounded-full border border-orange-200 inline-block mb-2">
+            Just Dropped
+          </span>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            Explore New Arrivals
+          </h2>
+          <p className="text-gray-500 text-sm mt-1 max-w-lg mx-auto">
+            Discover the latest trends and styles in our new arrivals collection.
+          </p>
+        </div>
 
-        {/* scroll buttons */}
-        <div className="absolute right-0 flex space-x-2 bottom-[-30px]">
+        {/* Scroll Buttons */}
+        <div className="flex justify-end gap-2 mt-4 sm:mt-0 sm:absolute sm:right-4 sm:bottom-0">
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
-            className={`p-2 rounded border ${
+            aria-label="Scroll left"
+            className={`w-9 h-9 rounded-full border flex items-center justify-center transition cursor-pointer ${
               canScrollLeft
-                ? "text-black"
-                : "text-gray-400 cursor-not-allowed"
+                ? "border-gray-300 text-gray-800 hover:bg-orange-500 hover:text-white hover:border-orange-500 shadow-sm"
+                : "border-gray-200 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <FaCaretLeft className="text-2xl" />
+            <FaCaretLeft size={18} />
           </button>
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
-            className={`p-2 rounded border ${
+            aria-label="Scroll right"
+            className={`w-9 h-9 rounded-full border flex items-center justify-center transition cursor-pointer ${
               canScrollRight
-                ? "text-black"
-                : "text-gray-400 cursor-not-allowed"
+                ? "border-gray-300 text-gray-800 hover:bg-orange-500 hover:text-white hover:border-orange-500 shadow-sm"
+                : "border-gray-200 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <FaCaretRight className="text-2xl" />
+            <FaCaretRight size={18} />
           </button>
         </div>
-      </section>
+      </div>
 
-      {/* scrollable container */}
+      {/* Horizontal Scrollable Container */}
       <div
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         ref={ScrollRef}
-        className={`container m-auto overflow-x-auto flex space-x-6 relative hide-scrollbar ${
+        className={`container mx-auto px-4 overflow-x-auto flex space-x-6 pb-4 select-none hide-scrollbar ${
           isDraggable ? "cursor-grabbing" : "cursor-grab"
         }`}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {newA.map((item) => (
-          <div
-            key={item.id}
-            className="min-w-full sm:min-w-1/2 lg:min-w-[30%] relative "
-          >
-            <img
-              className="w-full rounded-lg h-[300px] object-cover object-center"
-              src={item.image.url}
-              alt={item.image.altName}
-              draggable={false}
-            />
-            <div className="absolute bottom-0 left-0 bg-black/50 backdrop-blur-md text-white p-4 rounded-b-lg">
-              <Link to={`product/${item.id}`} className="block">
-                <h4 className="font-medium">{item.name}</h4>
-                <p className="mt-1">${item.price}</p>
-              </Link>
+        {newArrivals.map((item) => {
+          const imgUrl =
+            item.images?.[0]?.url ||
+            item.image?.url ||
+            item.image ||
+            "https://placehold.co/400x300?text=Product";
+
+          return (
+            <div
+              key={item._id || item.id}
+              className="min-w-[260px] sm:min-w-[300px] lg:min-w-[320px] relative rounded-2xl overflow-hidden shadow-md border border-gray-100 group bg-white hover:shadow-xl transition-all duration-300"
+            >
+              <div className="h-[340px] w-full overflow-hidden relative bg-gray-50">
+                <img
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  src={imgUrl}
+                  alt={item.images?.[0]?.altText || item.name}
+                  draggable={false}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                  <Link to={`/product/${item._id || item.id}`} className="block">
+                    <span className="text-xs text-orange-300 font-bold uppercase tracking-wider block mb-1">
+                      {item.brand || "Clothify"}
+                    </span>
+                    <h4 className="font-bold text-base truncate">{item.name}</h4>
+                    <p className="mt-1 font-extrabold text-orange-400 text-lg">
+                      Rs. {Number(item.price).toFixed(2)}
+                    </p>
+                  </Link>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </section>
   );
 };
 

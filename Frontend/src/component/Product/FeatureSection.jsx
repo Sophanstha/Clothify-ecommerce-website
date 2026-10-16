@@ -10,8 +10,8 @@ const FeatureSection = () => {
             <div className='p-4 rounded-lg mb-4'>
             <FaShoppingBag />
             </div>
-            <h1 className='tracking-tight mb-2'>Free international Shopping</h1>
-            <p className='text-gray-600 tracking-tighter text-sm'>on all order over $1000.00</p>
+            <h1 className='tracking-tight mb-2'>Free International Shipping</h1>
+            <p className='text-gray-600 tracking-tighter text-sm'>on all orders over Rs. 1,000</p>
           </div>
           <div className='flex flex-col items-center'>
             <div className='p-4 rounded-lg mb-4'>

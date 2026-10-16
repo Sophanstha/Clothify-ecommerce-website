@@ -27,21 +27,34 @@ const protect = async (req, res, next) => {
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
-export default protect;
-// middleware to check role is admin or not
-export const checkRole = (req,res,next)=>{
+export const optionalAuth = async (req, res, next) => {
   try {
-    if(req.user && req.user.role == "admin"){
-      next();
-    }else{
-      return res.status(501).json({
-        message : "unauthorized access role is not admin"
-      })
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRITY);
+      req.user = await User.findById(decoded.user.id).select("-password");
     }
-    
+    next();
+  } catch {
+    next();
+  }
+};
+
+export const checkRole = (req, res, next) => {
+  try {
+    if (req.user && req.user.role === "admin") {
+      next();
+    } else {
+      return res.status(403).json({
+        message: "unauthorized access role is not admin"
+      });
+    }
   } catch (error) {
     return res.status(500).json({
-      message : error
-    })
+      message: error.message
+    });
   }
-}
+};
+
+export default protect;
+

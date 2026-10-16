@@ -52,7 +52,15 @@ const productSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["Men", "Women", "Unisex"],
+      enum: ["Men", "Women", "Unisex", "men", "women", "unisex"],
+      set: (val) => {
+        if (!val) return val;
+        const lower = String(val).toLowerCase();
+        if (lower === "men") return "Men";
+        if (lower === "women") return "Women";
+        if (lower === "unisex") return "Unisex";
+        return val;
+      },
     },
     images: [
       {
@@ -81,6 +89,33 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    reviews: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user",
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        rating: {
+          type: Number,
+          required: true,
+          min: 1,
+          max: 5,
+        },
+        comment: {
+          type: String,
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     tags: {
       type: [String],
     },
