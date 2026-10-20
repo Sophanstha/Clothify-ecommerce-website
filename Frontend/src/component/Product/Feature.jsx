@@ -15,7 +15,7 @@ const Feature = () => {
                 </p>
                 <Link 
                 className='bg-black px-6 py-3 text-white w-1/3 hover:bg-gray-500'
-                to={'collections/all'}>
+                to={'/collection/all'}>
                 Shop Now
                 </Link>
             </div>

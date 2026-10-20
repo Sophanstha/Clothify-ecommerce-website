@@ -69,9 +69,13 @@ const FilterBar = () => {
   // Load filter from URL params
   useEffect(() => {
     const params = Object.fromEntries([...searchParams]);
+    const rawGender = params.gender || "";
+    const matchedGender =
+      genders.find((g) => g.toLowerCase() === rawGender.toLowerCase()) || rawGender;
+
     setFilter({
       category: params.category || "",
-      gender: params.gender || "",
+      gender: matchedGender,
       color: params.color || "",
       size: params.size ? params.size.split(",").map((s) => s.trim()) : [],
       material: params.material ? params.material.split(",").map((m) => m.trim()) : [],
@@ -233,7 +237,7 @@ const FilterBar = () => {
                 type="radio"
                 name="gender"
                 value={g}
-                checked={filter.gender === g}
+                checked={filter.gender?.toLowerCase() === g.toLowerCase()}
                 onChange={() => handleGenderClick(g)}
                 className="text-orange-500 focus:ring-orange-500"
               />

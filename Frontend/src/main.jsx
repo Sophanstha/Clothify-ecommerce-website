@@ -33,6 +33,7 @@ const route = createBrowserRouter(
       <Route path='/forgot-password' element={<ForgotPassword/>}/>
       <Route path='/reset-password/:token' element={<ResetPassword/>}/>
       <Route path='/collection/all' element={<Collection/>} />
+      <Route path='/collections/all' element={<Collection/>} />
       <Route path='/product/:id' element={<BestSeller/>}/>
       
       {/* Protected Customer Routes */}

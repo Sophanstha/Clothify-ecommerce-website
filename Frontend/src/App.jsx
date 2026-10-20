@@ -18,7 +18,7 @@ const App = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [loaction.pathname]);
+  }, [loaction.pathname, loaction.search]);
 
   return (
       <div className="min-h-screen flex flex-col">
